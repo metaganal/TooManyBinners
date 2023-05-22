@@ -1,0 +1,45 @@
+BootStrap: debootstrap
+OSVersion: stable
+MirrorURL: http://ftp.us.debian.org/debian/
+
+%environment
+    PATH=/opt/miniconda3/bin:$PATH
+    PATH=/opt/:$PATH
+
+%post
+
+    # apt repository installs...
+    apt-get update
+    apt-get -y install wget nano git
+    apt-get -y install python3
+    apt-get update && apt-get install -y wget git bash gcc gfortran g++ make file
+
+
+    # conda obtaining
+    wget "https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linux-x86_64.sh" -O miniconda_file.sh
+    bash miniconda_file.sh -b -f -p /opt/miniconda3
+    PATH=/opt/miniconda3/bin:$PATH
+    conda init
+    conda config --add channels conda-forge
+    conda config --add channels bioconda
+    conda install -y mamba
+    conda install -c conda-forge psutil
+    mamba create -n ContigAbundDepthsEnv bowtie2 samtools psutil
+    mamba create -n Metabat2 metabat2 psutil
+    mamba create -n Semibin2 semibin
+    mamba create -n Maxbin2 maxbin2
+
+
+
+
+    # mag framework scripts obtaining
+    # get mag framework scripts
+
+
+    git clone -b tests https://lobrien20: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@github.com/lobrien20/magdb-framework
+    chmod +rwx magdb-framework/*.py 
+    cp magdb-framework/*.py /opt/
+
+
+
+%runscript
