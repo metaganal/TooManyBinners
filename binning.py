@@ -22,7 +22,7 @@ class ContigAbundances:
     def build_indices(self):
         
         indice_basename = f"{self.output_directory}/contig_indices"
-        bowtie_indice_build_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'bowtie2', '--threads', self.threads, self.contig_file_path, indice_basename]
+        bowtie_indice_build_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
         run_and_log_a_subprocess(self.output_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
         return indice_basename
         
@@ -43,8 +43,8 @@ class ContigAbundances:
         bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
         sorted_bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
         samtools_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
-        samtools_sort_args = ['samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
-        samtools_index_args = ['samtools', 'index', '-@', self.threads, sorted_bam_output_file]
+        samtools_sort_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
+        samtools_index_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
         
         run_and_log_a_subprocess(self.output_directory, samtools_args, 'samtools_conversion')
         run_and_log_a_subprocess(self.output_directory, samtools_sort_args, 'samtools_sort')
