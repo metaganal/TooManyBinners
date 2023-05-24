@@ -67,7 +67,7 @@ class Binner:
     abundance_information_path = ""
     log_directory_path = ""
     threads = "1"
-    min_contig_length = "1000"
+    min_contig_length = "2000"
     
 
 
@@ -106,7 +106,7 @@ class Binner:
     def run_maxbin2(self, output_directory):
         
         maxbin2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Maxbin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
-                        '-threads', self.threads, '-abund', self.abundance_information_path, '-out', output_directory]
+                        '-thread', self.threads, '-abund', self.abundance_information_path, '-out', output_directory]
         
         run_and_log_a_subprocess(output_directory, maxbin2_args, "maxbin2_binning")
 
@@ -123,7 +123,7 @@ class Binner:
         
     def run_semibin2(self, output_directory):
         
-        semibin_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Semibin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.read_depths_path, '-o', output_directory, '-t', self.threads,
+        semibin_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Semibin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
         run_and_log_a_subprocess(output_directory, semibin_args, "semibin_binning")
