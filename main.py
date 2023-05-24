@@ -3,7 +3,6 @@ import argparse
 
 from binning import setup_binning
 from binning import run_binning
-
 # Needs to take the following arguments:
 # threads,contigs,reads,individual_binners,minimum_contig_length
 # 
@@ -20,8 +19,9 @@ def main():
     
     args = parser.parse_args()
     contig_abundance_gen,the_binner = setup_binning(args)
+
     run_binning(args.output_directory, the_binner, ",".join(args.individual_binners))
-    
+
 # first needs to generate coverage depths file
 
 

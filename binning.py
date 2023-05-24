@@ -138,7 +138,9 @@ def setup_binning(args):
 # Then running of individual binners and verify each option
     Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=args.contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, 
                                                                     abundance_file_path=contig_abundance_gen.contig_abundance_file)
-    
+    log_directory = f"{args.output_directory}/log_directory/"
+    os.mkdir(log_directory)
+    Binner.add_or_change_log_directory(log_directory)
     the_binner = Binner()
     the_binner.calculate_read_depth(f"{args.output_directory}/read_depths.txt")
     
