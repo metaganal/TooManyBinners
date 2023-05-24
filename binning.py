@@ -66,8 +66,8 @@ class Binner:
     rev_read_path = ""
     abundance_information_path = ""
     log_directory_path = ""
-    threads = 1
-    min_contig_length = 1000
+    threads = "1"
+    min_contig_length = "1000"
     
 
 
