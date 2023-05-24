@@ -98,14 +98,14 @@ class Binner:
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
         
-        get_contig_depth_args = ['conda', 'run' '--prefix', '/opt/miniconda3/envs/Metabat2' 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
+        get_contig_depth_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2' 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
        
         
     def run_maxbin2(self, output_directory):
         
-        maxbin2_args = ['conda', 'run' '--prefix', '/opt/miniconda3/envs/Maxbin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
+        maxbin2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Maxbin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
                         '-threads', self.threads, '-abund', self.abundance_information_path, '-out', output_directory]
         
         run_and_log_a_subprocess(output_directory, maxbin2_args, "maxbin2_binning")
@@ -115,7 +115,7 @@ class Binner:
 
     def run_metabat2(self, output_directory):
         
-        metabat2_args = ['conda', 'run' '--prefix', '/opt/miniconda3/envs/Metabat2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
+        metabat2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
         run_and_log_a_subprocess(output_directory, metabat2_args, "metabat2_binning")
