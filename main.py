@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 
-from classes import ContigAbundances
-from classes import Binner
-import os
-
-from functions import setup_binning
-from functions import run_binning
+from binning import setup_binning
+from binning import run_binning
 
 # Needs to take the following arguments:
 # threads,contigs,reads,individual_binners,minimum_contig_length

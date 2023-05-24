@@ -1,7 +1,6 @@
 import subprocess
 import os
-from functions import run_and_log_a_subprocess
-
+from utils import run_and_log_a_subprocess
 
 class ContigAbundances:
     
@@ -128,3 +127,36 @@ class Binner:
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
         run_and_log_a_subprocess(output_directory, semibin_args, "semibin_binning")
+
+
+
+
+
+def setup_binning(args):
+    contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=args.contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
+
+# Then running of individual binners and verify each option
+    Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=args.contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, 
+                                                                    abundance_file_path=contig_abundance_gen.contig_abundance_file)
+    
+    the_binner = Binner()
+    the_binner.calculate_read_depth(f"{args.output_directory}/read_depths.txt")
+    
+    return contig_abundance_gen,the_binner
+
+
+def run_binning(output_directory, the_binner, binner_option_list):
+    
+    bin_methods_dict = {'Semibin2' : the_binner.run_semibin2(f"{output_directory}/Semibin2/"), 'Metabat2' : the_binner.run_metabat2(f"{output_directory}/Metabat2/"), 
+                        'Maxbin2' : the_binner.run_maxbin2(f"{output_directory}/Maxbin2/")}
+    
+    for binner in binner_option_list:
+        
+        try:
+            
+            bin_methods_dict[binner]()
+        
+        except KeyError:
+            
+            print(f"Could not find individual binner chosen: {binner} - please check your binner options. Exiting.")
+            exit()
