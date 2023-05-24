@@ -98,7 +98,7 @@ class Binner:
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
         
-        get_contig_depth_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2' 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
+        get_contig_depth_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2', 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
        
