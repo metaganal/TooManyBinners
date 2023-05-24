@@ -10,7 +10,7 @@ class ContigAbundances:
         self.output_directory = output_directory
         self.contig_file_path = contig_file_path
         self.read_fwd_path = read_fwd_path
-        self.red_rev_path = read_rev_path
+        self.read_rev_path = read_rev_path
         self.threads = threads
         
         self.indice_basename = self.build_indices()
@@ -31,7 +31,7 @@ class ContigAbundances:
         sam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.sam"
         
         bowtie2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'bowtie2', '-x', self.indice_basename, '-1', self.read_fwd_path, 
-                        '-2', self.read_fwd_path, '-p', self.threads, '--very-sensitive', 
+                        '-2', self.read_rev_path, '-p', self.threads, '--very-sensitive', 
                         '--no-unal', '-S', sam_output_file]
         
         run_and_log_a_subprocess(self.output_directory, bowtie2_args, 'bowtie_sam_log')
