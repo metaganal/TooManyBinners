@@ -98,24 +98,23 @@ class Binner:
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
         
-        get_contig_depth_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2', 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
+        get_contig_depth_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
        
         
     def run_maxbin2(self, output_directory):
         
-        maxbin2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Maxbin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
-                        '-thread', self.threads, '-abund', self.abundance_information_path, '-out', output_directory]
+        maxbin2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
+                        '-thread', self.threads, '-abund', self.abundance_information_path, '-out', f"{output_directory}/sample_result_"]
         
         run_and_log_a_subprocess(output_directory, maxbin2_args, "maxbin2_binning")
 
         
 
-
     def run_metabat2(self, output_directory):
         
-        metabat2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Metabat2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
+        metabat2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
         run_and_log_a_subprocess(output_directory, metabat2_args, "metabat2_binning")
@@ -123,14 +122,40 @@ class Binner:
         
     def run_semibin2(self, output_directory):
         
-        semibin_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Semibin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
+        semibin_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
         run_and_log_a_subprocess(output_directory, semibin_args, "semibin_binning")
 
-
-
-
+    def run_concoct(self, output_directory):
+        contig_bed_file_path = f"{output_directory}/contigs_10k.bed"
+        contig_10k_file_path = f"{output_directory}/contigs_10k.fa"
+        step_1_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'cut_up_fasta.py', self.contigs_path, '-c', '10000', '-o', '0', '--merge_last', '-b', contig_bed_file_path]
+        run_and_log_a_subprocess(output_directory, step_1_args, "concoct_cutup_fasta", alternate_stdout_path=contig_10k_file_path)
+        
+        coverage_table_path = f"{output_directory}/coverage_table.tsv"
+        step_2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct_coverage_table.py', contig_bed_file_path, self.abundance_information_path]
+        run_and_log_a_subprocess(output_directory, step_2_args, "concoct_gen_cov_table", alternate_stdout_path=coverage_table_path)
+        
+        step_3_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct', '--composition_file', self.contigs_path, '--length_threshold', self.min_contig_length, '--coverage_file', coverage_table_path, '-b', output_directory]
+        run_and_log_a_subprocess(output_directory, step_3_args, "concoct_step_3_run_concoct")
+        
+        clustered_file_path = f"{output_directory}/clustering_gt{self.min_contig_length}.csv"
+        clustering_merged_path = f"{output_directory}/clustering_merged.csv"
+        step_4_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'merge_cutup_clustering.py', clustered_file_path]
+        run_and_log_a_subprocess(output_directory, step_4_args, "concoct_gen_cov_table", alternate_stdout_path=clustering_merged_path)
+        final_concoct_bins_path = f"{output_directory}/fasta_bins/"
+        os.mkdir(final_concoct_bins_path)
+        
+        step_1_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
+        run_and_log_a_subprocess(output_directory, step_3_args, "concoct_final_step_extract_fasta_bins")
+        
+        
+    def run_vamb(self, output_directory):
+            # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
+        vamb_args = ['conda,' 'run', '--prefix', '/opt/miniconda3/envs/Vamb4', 'vamb', '--outdir', output_directory, '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
+                         '-p', self.threads]
+        run_and_log_a_subprocess(output_directory, vamb_args, "vamb_binning")
 
 def setup_binning(args):
     contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=args.contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
@@ -149,8 +174,8 @@ def setup_binning(args):
 
 def run_binning(output_directory, the_binner, binner_option_list):
     
-    bin_methods_dict = {'Semibin2' : the_binner.run_semibin2(f"{output_directory}/Semibin2/"), 'Metabat2' : the_binner.run_metabat2(f"{output_directory}/Metabat2/"), 
-                        'Maxbin2' : the_binner.run_maxbin2(f"{output_directory}/Maxbin2/")}
+    bin_methods_dict = {'Semibin2' : the_binner.run_semibin2(f"{output_directory}/Semibin2/"), 'Metabat2' : the_binner.run_metabat2(f"{output_directory}/Metabat2/"),
+                        'Maxbin2' : the_binner.run_maxbin2(f"{output_directory}/Maxbin2/"), "Vamb" : the_binner.run_vamb(f"{output_directory}/Vamb/"), "CONCOCT" : the_binner.run_concoct(f"{output_directory}/CONCOCT/")}
     
     for binner in binner_option_list:
         

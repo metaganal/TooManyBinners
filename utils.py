@@ -39,3 +39,11 @@ def run_and_log_a_subprocess(process_log_dir, process_args, name_of_sample=None,
         
         f.write(result.stderr)
 
+def get_name_of_sample(rev_path, fwd_path):
+    sample_name = ""
+    for i in range(0, len(rev_path), 1):
+        if rev_path[i] != fwd_path[i]:
+            break
+        sample_name = sample_name + rev_path[i]
+        
+    return sample_name

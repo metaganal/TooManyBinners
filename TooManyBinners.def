@@ -24,21 +24,14 @@ MirrorURL: http://ftp.us.debian.org/debian/
     conda config --add channels bioconda
     conda install -y mamba
     conda install -c conda-forge psutil
-    mamba create -n ContigAbundDepthsEnv bowtie2 samtools psutil
-    mamba create -n Metabat2 metabat2 psutil
+    mamba create -n ContigAbundDepthsEnv bowtie2 samtools
+    mamba create -n Metabat2 metabat2
     mamba create -n Semibin2 semibin
     mamba create -n Maxbin2 maxbin2
+    mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
 
-
-
-
-    # mag framework scripts obtaining
-    # get mag framework scripts
-
-
-    git clone -b tests https://lobrien20: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@github.com/lobrien20/magdb-framework
-    chmod +rwx magdb-framework/*.py 
-    cp magdb-framework/*.py /opt/
+    mamba create -n Vamb4 pip
+    bash -c "source /opt/miniconda3/bin/activate Vamb4 && pip install vamb"
 
 
 
