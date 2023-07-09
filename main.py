@@ -13,9 +13,11 @@ def main():
     parser.add_argument("-t", "--threads", help="Threads", required=True)
     parser.add_argument("-fw", "--forward-reads", help="Forward read path", required=True)
     parser.add_argument("-rev", "--reverse-reads", help="reverse read path", required=True)
-    parser.add_argument("-contigs", "--contig-path", help="contig file path", required=True)
+    parser.add_argument("-contigs", "--contig-path", help="contig file path, if not provided will auto assemble")
     parser.add_argument("-b", "--individual-binners", help="Pick individual binners with commas, choices are: Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT", required=True) # KEEP UPDATING THIS
     parser.add_argument("-o", "--output-directory", help="Output directory_path", required=True)
+    parser.add_argument("-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto)")
+    parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
     
     args = parser.parse_args()
     contig_abundance_gen,the_binner = setup_binning(args)

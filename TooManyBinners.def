@@ -25,9 +25,6 @@ MirrorURL: http://ftp.us.debian.org/debian/
     conda install -y mamba
     conda install -c conda-forge psutil
     mamba create -n ContigAbundDepthsEnv bowtie2 samtools
-    mamba create -n Metabat2 metabat2
-    mamba create -n Semibin2 semibin
-    mamba create -n Maxbin2 maxbin2
     mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
 
     mamba create -n Vamb4 pip

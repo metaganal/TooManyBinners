@@ -2,6 +2,47 @@ import subprocess
 import os
 from utils import run_and_log_a_subprocess
 
+class MetaSpadesAssemblyRunner:
+    
+    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads):
+        self.output_directory = output_directory
+        self.using_scaffolds = using_scaffolds
+        self.read_fwd_path = read_fwd_path
+        self.read_rev_path = read_rev_path
+        self.threads = threads
+
+    
+    def run_assembly(self):
+        metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
+        metaspades_assembly_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--meta', '-o', metaspades_result_directory]
+        run_and_log_a_subprocess(self.output_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
+
+        if self.using_scaffolds == True:
+
+            print("Using metaspades generated scaffolds as contigs")
+            return f"{metaspades_result_directory}/scaffolds.fa"
+
+        else:
+
+            return f"{metaspades_result_directory}/contigs.fa"
+
+
+    def run_assembly_with_custom_kmer_lengths(self, custom_kmer_lengths):
+        metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
+        metaspades_assembly_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '-k', custom_kmer_lengths, '--meta', '-o', metaspades_result_directory]
+        run_and_log_a_subprocess(self.output_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
+
+        if self.using_scaffolds == True:
+
+            print("Using metaspades generated scaffolds as contigs")
+            return f"{metaspades_result_directory}/scaffolds.fa"
+
+        else:
+
+            return f"{metaspades_result_directory}/contigs.fa"
+
+
+        
 class ContigAbundances:
     
     
@@ -153,16 +194,36 @@ class Binner:
         
     def run_vamb(self, output_directory):
             # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
-        vamb_args = ['conda,' 'run', '--prefix', '/opt/miniconda3/envs/Vamb4', 'vamb', '--outdir', output_directory, '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
+        vamb_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/Vamb4', 'vamb', '--outdir', output_directory, '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
         run_and_log_a_subprocess(output_directory, vamb_args, "vamb_binning")
 
-def setup_binning(args):
-    contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=args.contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
 
-# Then running of individual binners and verify each option
-    Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=args.contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, 
-                                                                    abundance_file_path=contig_abundance_gen.contig_abundance_file)
+
+def setup_binning(args):
+    
+    if not args.contig_path:
+        if not args.using_scaffolds:
+            using_scaffolds = False
+        else:
+            using_scaffolds = True
+    
+        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads)
+        
+        if not args.custom_kmer_lengths:
+        
+            contig_path = assembler.run_assembly()
+        
+        else:
+            
+            contig_path = assembler.run_assembly_with_custom_kmer_lengths(args.custom_kmer_lengths)
+            
+    else:
+        contig_path = args.contig_path
+        
+    contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
+
+    Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
     log_directory = f"{args.output_directory}/log_directory/"
     os.mkdir(log_directory)
     Binner.add_or_change_log_directory(log_directory)
