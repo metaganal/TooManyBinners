@@ -63,7 +63,7 @@ class ContigAbundances:
     def build_indices(self):
         
         indice_basename = f"{self.output_directory}/contig_indices"
-        bowtie_indice_build_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
+        bowtie_indice_build_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
         run_and_log_a_subprocess(self.output_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
         return indice_basename
         
@@ -71,7 +71,7 @@ class ContigAbundances:
         
         sam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.sam"
         
-        bowtie2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'bowtie2', '-x', self.indice_basename, '-1', self.read_fwd_path, 
+        bowtie2_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'bowtie2', '-x', self.indice_basename, '-1', self.read_fwd_path, 
                         '-2', self.read_rev_path, '-p', self.threads, '--very-sensitive', 
                         '--no-unal', '-S', sam_output_file]
         
@@ -83,9 +83,9 @@ class ContigAbundances:
     def convert_and_sort_aligned_sam_file(self):
         bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
         sorted_bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
-        samtools_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
-        samtools_sort_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
-        samtools_index_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/ContigAbundDepthsEnv', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
+        samtools_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
+        samtools_sort_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
+        samtools_index_args = ['conda', 'run', '--prefix', '/opt/miniconda3/envs/prebinning', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
         
         run_and_log_a_subprocess(self.output_directory, samtools_args, 'samtools_conversion')
         run_and_log_a_subprocess(self.output_directory, samtools_sort_args, 'samtools_sort')
