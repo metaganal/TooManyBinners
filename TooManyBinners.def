@@ -22,12 +22,11 @@ MirrorURL: http://ftp.us.debian.org/debian/
     conda init
     conda config --add channels conda-forge
     conda config --add channels bioconda
-    conda install -y mamba
     conda install -c conda-forge psutil
-    mamba create -n prebinning bowtie2 samtools spades
-    mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
+    conda create -n prebinning bowtie2 samtools spades
+    conda create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
 
-    mamba create -n Vamb4 pip
+    conda create -n Vamb4 pip
     bash -c "source /opt/miniconda3/bin/activate Vamb4 && pip install vamb"
 
 
