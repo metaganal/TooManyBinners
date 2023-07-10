@@ -24,7 +24,7 @@ MirrorURL: http://ftp.us.debian.org/debian/
     conda config --add channels bioconda
     conda install -y mamba
     conda install -c conda-forge psutil
-    mamba create -n ContigAbundDepthsEnv bowtie2 samtools
+    mamba create -n prebinning bowtie2 samtools spades
     mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
 
     mamba create -n Vamb4 pip
