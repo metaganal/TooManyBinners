@@ -3,7 +3,7 @@ OSVersion: stable
 MirrorURL: http://ftp.us.debian.org/debian/
 
 %environment
-    PATH=/opt/miniconda3/bin:$PATH
+    PATH=/opt/mamba/bin:$PATH
     PATH=/opt/:$PATH
 
 %post
@@ -15,19 +15,18 @@ MirrorURL: http://ftp.us.debian.org/debian/
     apt-get update && apt-get install -y wget git bash gcc gfortran g++ make file
 
 
-    # conda obtaining
-    wget "https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linux-x86_64.sh" -O miniconda_file.sh
-    bash miniconda_file.sh -b -f -p /opt/miniconda3
-    PATH=/opt/miniconda3/bin:$PATH
-    conda init
-    conda config --add channels conda-forge
-    conda config --add channels bioconda
-    conda install -c conda-forge psutil
-    conda create -n prebinning bowtie2 samtools spades
-    conda create -n CONCOCTMetabat2MaxBin2SemiBin2 concoct maxbin2 metabat2 semibin
+    # mamba obtaining
+    wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh" -O mamba_file.sh
+    bash mamba_file.sh -b -f -p /opt/mamba
+    PATH=/opt/mamba/bin:$PATH
+    mamba init
 
-    conda create -n Vamb4 pip
-    bash -c "source /opt/miniconda3/bin/activate Vamb4 && pip install vamb"
+    mamba install -c conda-forge psutil
+    mamba create -n prebinning -c conda-forge -c bioconda bowtie2 samtools spades
+    mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 -c conda-forge -c bioconda concoct maxbin2 metabat2 semibin
+
+    mamba create -n Vamb4 pip
+    bash -c "source /opt/mamba/bin/activate Vamb4 && pip install vamb"
 
 
 

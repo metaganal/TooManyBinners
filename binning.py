@@ -42,6 +42,19 @@ class MetaSpadesAssemblyRunner:
             return f"{metaspades_result_directory}/contigs.fa"
 
 
+
+    def check_if_assembly_step_has_already_been_completed(self):
+        metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
+        if os.path.isdir(metaspades_result_directory):
+            if not os.path.exists(f"{metaspades_result_directory}/contigs.fa") or not os.path.exists(f"{metaspades_result_directory}/scaffolds.fa"):
+                print("Found metaspades directory but on contigs or scaffolds. Error, exiting.")
+                exit()
+            if self.using_scaffolds == True:
+                return f"{metaspades_result_directory}/scaffolds.fa"
+            else:
+                return f"{metaspades_result_directory}/contigs.fa"
+        
+        return False
         
 class ContigAbundances:
     
@@ -201,26 +214,8 @@ class Binner:
 
 
 def setup_binning(args):
-    
-    if not args.contig_path:
-        if not args.using_scaffolds:
-            using_scaffolds = False
-        else:
-            using_scaffolds = True
-    
-        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads)
-        
-        if not args.custom_kmer_lengths:
-        
-            contig_path = assembler.run_assembly()
-        
-        else:
-            
-            contig_path = assembler.run_assembly_with_custom_kmer_lengths(args.custom_kmer_lengths)
-            
-    else:
-        contig_path = args.contig_path
-        
+    contig_path = generate_contigs(args)
+
     contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
 
     Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
@@ -231,6 +226,30 @@ def setup_binning(args):
     the_binner.calculate_read_depth(f"{args.output_directory}/read_depths.txt")
     
     return contig_abundance_gen,the_binner
+
+def generate_contigs(args):
+    if args.contig_path:
+        return args.contig_path
+    else:
+        if not args.using_scaffolds:
+            using_scaffolds = False
+        else:
+            using_scaffolds = True
+    
+        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads)
+        contig_path = assembler.check_if_assembly_step_has_already_been_completed():
+        
+        if contig_path == False:
+            
+            if not args.custom_kmer_lengths:
+            
+                contig_path = assembler.run_assembly()
+            
+            else:
+                
+                contig_path = assembler.run_assembly_with_custom_kmer_lengths(args.custom_kmer_lengths)
+                
+    return contig_path
 
 
 def run_binning(output_directory, the_binner, binner_option_list):
