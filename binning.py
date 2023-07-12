@@ -46,7 +46,7 @@ class MetaSpadesAssemblyRunner:
     def check_if_assembly_step_has_already_been_completed(self):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         if os.path.isdir(metaspades_result_directory):
-            if not os.path.exists(f"{metaspades_result_directory}/contigs.fa") or not os.path.exists(f"{metaspades_result_directory}/scaffolds.fa"):
+            if not os.path.exists(f"{metaspades_result_directory}/contigs.fa") or os.path.exists(f"{metaspades_result_directory}/scaffolds.fa"):
                 print("Found metaspades directory but on contigs or scaffolds. Error, exiting.")
                 exit()
             if self.using_scaffolds == True:
@@ -237,7 +237,7 @@ def generate_contigs(args):
             using_scaffolds = True
     
         assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads)
-        contig_path = assembler.check_if_assembly_step_has_already_been_completed():
+        contig_path = assembler.check_if_assembly_step_has_already_been_completed()
         
         if contig_path == False:
             
