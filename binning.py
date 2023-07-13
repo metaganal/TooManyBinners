@@ -85,7 +85,8 @@ class ContigAbundances:
     def align_reads_to_contigs(self):
         
         sam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.sam"
-        
+        if os.path.exists(sam_output_file):
+            return sam_output_file
         bowtie2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'bowtie2', '-x', self.indice_basename, '-1', self.read_fwd_path, 
                         '-2', self.read_rev_path, '-p', self.threads, '--very-sensitive', 
                         '--no-unal', '-S', sam_output_file]
@@ -230,7 +231,10 @@ def setup_binning(args):
 
     Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
     log_directory = f"{args.output_directory}/log_directory/"
-    os.mkdir(log_directory)
+    
+    if not os.path.exists(log_directory):
+        os.mkdir(log_directory)
+    
     Binner.add_or_change_log_directory(log_directory)
     the_binner = Binner()
     the_binner.calculate_read_depth(f"{args.output_directory}/read_depths.txt")
