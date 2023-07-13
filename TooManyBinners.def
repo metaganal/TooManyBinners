@@ -27,7 +27,7 @@ MirrorURL: http://ftp.us.debian.org/debian/
 
     mamba create -n Vamb4 pip
     bash -c "source /opt/mamba/bin/activate Vamb4 && pip install vamb"
-
+    wget https://raw.githubusercontent.com/RasmussenLab/vamb/master/src/create_fasta.py -O /opt/create_fasta.py
 
 
 %runscript
