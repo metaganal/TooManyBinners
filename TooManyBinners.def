@@ -23,7 +23,7 @@ MirrorURL: http://ftp.us.debian.org/debian/
 
     mamba install -c conda-forge psutil
     mamba create -n prebinning -c conda-forge -c bioconda bowtie2 samtools spades
-    mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 -c conda-forge -c bioconda concoct maxbin2 metabat2 semibin
+    mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 -c conda-forge -c bioconda concoct maxbin2 metabat2 semibin scikit-learn=1.1
 
     mamba create -n Vamb4 pip
     bash -c "source /opt/mamba/bin/activate Vamb4 && pip install vamb"

@@ -95,7 +95,11 @@ class ContigAbundances:
         
     def convert_and_sort_aligned_sam_file(self):
         bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
-        sorted_bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
+        sorted_bam_output_file = f"{self.output_directory}/sorted_aligned_reads_to_contigs.bam"
+        
+        if os.path.exists(sorted_bam_output_file):
+            return bam_output_file
+        
         samtools_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
         samtools_sort_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
         samtools_index_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
@@ -151,7 +155,9 @@ class Binner:
         
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
-        
+        if os.path.exists(depth_output_path):
+            cls.read_depths_path = depth_output_path
+            return
         get_contig_depth_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
@@ -160,14 +166,15 @@ class Binner:
     def run_maxbin2(self, output_directory):
         
         maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
-                        '-thread', self.threads, '-abund', self.abundance_information_path, '-out', f"{output_directory}/sample_result_"]
+                        '-thread', self.threads, '-abund', self.read_depths_path, '-out', f"{output_directory}/sample_result_"]
         
         run_and_log_a_subprocess(output_directory, maxbin2_args, "maxbin2_binning")
 
         
 
     def run_metabat2(self, output_directory):
-        
+        if len([file for file in os.listdir(output_directory) if ".fa" in file]) > 1:
+            return
         metabat2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
@@ -175,7 +182,8 @@ class Binner:
         
         
     def run_semibin2(self, output_directory):
-        
+        if os.path.exists(f"{output_directory}/output_recluster_bins/"):
+            return
         semibin_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
@@ -197,7 +205,7 @@ class Binner:
         clustered_file_path = f"{output_directory}/clustering_gt{self.min_contig_length}.csv"
         clustering_merged_path = f"{output_directory}/clustering_merged.csv"
         step_4_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'merge_cutup_clustering.py', clustered_file_path]
-        run_and_log_a_subprocess(output_directory, step_4_args, "concoct_gen_cov_table", alternate_stdout_path=clustering_merged_path)
+        run_and_log_a_subprocess(output_directory, step_4_args, "concoct_cutup_clustering", alternate_stdout_path=clustering_merged_path)
         final_concoct_bins_path = f"{output_directory}/fasta_bins/"
         os.mkdir(final_concoct_bins_path)
         
@@ -207,7 +215,7 @@ class Binner:
         
     def run_vamb(self, output_directory):
             # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
-        vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', output_directory, '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
+        vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
         run_and_log_a_subprocess(output_directory, vamb_args, "vamb_binning")
 
