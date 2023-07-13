@@ -76,6 +76,8 @@ class ContigAbundances:
     def build_indices(self):
         
         indice_basename = f"{self.output_directory}/contig_indices"
+        if [file for file in os.listdir(self.output_directory) if ".bt2" in file] == 6:
+            return indice_basename
         bowtie_indice_build_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
         run_and_log_a_subprocess(self.output_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
         return indice_basename
