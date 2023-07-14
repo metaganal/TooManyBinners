@@ -4,12 +4,13 @@ from utils import run_and_log_a_subprocess
 
 class MetaSpadesAssemblyRunner:
     
-    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads):
+    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads, sample_name):
         self.output_directory = output_directory
         self.using_scaffolds = using_scaffolds
         self.read_fwd_path = read_fwd_path
         self.read_rev_path = read_rev_path
         self.threads = threads
+        self.sample_name = sample_name
 
     
     def run_assembly(self):
@@ -20,11 +21,12 @@ class MetaSpadesAssemblyRunner:
         if self.using_scaffolds == True:
 
             print("Using metaspades generated scaffolds as contigs")
-            return f"{metaspades_result_directory}/scaffolds.fasta"
+            os.rename(f"{metaspades_result_directory}/scaffolds.fasta", f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta")
+            return f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"
 
         else:
-
-            return f"{metaspades_result_directory}/contigs.fasta"
+            os.rename(f"{metaspades_result_directory}/contigs.fasta", f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta")
+            return f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta"
 
 
     def run_assembly_with_custom_kmer_lengths(self, custom_kmer_lengths):
@@ -35,7 +37,7 @@ class MetaSpadesAssemblyRunner:
         if self.using_scaffolds == True:
 
             print("Using metaspades generated scaffolds as contigs")
-            return f"{metaspades_result_directory}/scaffolds.fasta"
+            return f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"
 
         else:
 
@@ -46,13 +48,13 @@ class MetaSpadesAssemblyRunner:
     def check_if_assembly_step_has_already_been_completed(self):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         if os.path.isdir(metaspades_result_directory):
-            if not os.path.exists(f"{metaspades_result_directory}/contigs.fasta") or not os.path.exists(f"{metaspades_result_directory}/scaffolds.fasta"):
+            if not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta") or not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"):
                 print("Found metaspades directory but on contigs or scaffolds. Error, exiting.")
                 exit()
             if self.using_scaffolds == True:
-                return f"{metaspades_result_directory}/scaffolds.fasta"
+                return f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"
             else:
-                return f"{metaspades_result_directory}/contigs.fasta"
+                return f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta"
         
         return False
         
@@ -220,13 +222,13 @@ class Binner:
         vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
         run_and_log_a_subprocess(output_directory, vamb_args, "vamb_binning")
-        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', '--fastapath', self.contigs_path, '--clusterspath', f"{output_directory}/results/vae_clusters.tsv", '--outdir', f"{output_directory}/bins/"]
+        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', '--fastapath', self.contigs_path, '--clusterspath', f"{output_directory}/results/vae_clusters.tsv", '--minsize', '0', '--outdir', f"{output_directory}/bins/"]
         run_and_log_a_subprocess(output_directory, create_fasta_args, "vamb_binning_step2")
         
 
 
-def setup_binning(args):
-    contig_path = generate_contigs(args)
+def setup_binning(args, sample_name):
+    contig_path = generate_contigs(args, sample_name)
 
     contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
 
@@ -238,11 +240,11 @@ def setup_binning(args):
     
     Binner.add_or_change_log_directory(log_directory)
     the_binner = Binner()
-    the_binner.calculate_read_depth(f"{args.output_directory}/read_depths.txt")
+    the_binner.calculate_read_depth(f"{args.output_directory}/{sample_name}_read_depths.txt")
     
     return contig_abundance_gen,the_binner
 
-def generate_contigs(args):
+def generate_contigs(args, sample_name):
     if args.contig_path:
         return args.contig_path
     else:
@@ -251,7 +253,7 @@ def generate_contigs(args):
         else:
             using_scaffolds = True
     
-        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads)
+        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads, sample_name)
         contig_path = assembler.check_if_assembly_step_has_already_been_completed()
         
         if contig_path == False:

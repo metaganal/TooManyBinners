@@ -18,10 +18,16 @@ def main():
     parser.add_argument("-o", "--output-directory", help="Output directory_path", required=True)
     parser.add_argument("-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto)")
     parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
-    
-    args = parser.parse_args()
-    contig_abundance_gen,the_binner = setup_binning(args)
 
+    args = parser.parse_args()
+
+    sample_name = ""
+    for fwd,rev in zip(args.forward_reads, args.reverse_reads):
+        if fwd == rev:
+            sample_name = sample_name + fwd
+        else:
+            break
+    contig_abundance_gen,the_binner = setup_binning(args, sample_name)
     run_binning(args.output_directory, the_binner, ",".join(args.individual_binners))
 
 # first needs to generate coverage depths file
