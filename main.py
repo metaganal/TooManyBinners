@@ -22,7 +22,9 @@ def main():
     args = parser.parse_args()
 
     sample_name = ""
-    for fwd,rev in zip(args.forward_reads, args.reverse_reads):
+    forward_read_file_name = args.forward_reads.split("/")[-1]
+    reverse_read_file_name = args.reverse_reads.split("/")[-1]
+    for fwd,rev in zip(forward_read_file_name, reverse_read_file_name):
         if fwd == rev:
             sample_name = sample_name + fwd
         else:
