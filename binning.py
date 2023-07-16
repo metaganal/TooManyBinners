@@ -98,21 +98,22 @@ class ContigAbundances:
     
         
     def convert_and_sort_aligned_sam_file(self):
+        
         bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
-        sorted_bam_output_file = f"{self.output_directory}/sorted_aligned_reads_to_contigs.bam"
+        sorted_bam_output_file = f"{self.output_directory}/sorted_reads_to_contigs.bam"
         
         if os.path.exists(sorted_bam_output_file):
             return sorted_bam_output_file
         
         samtools_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
-        samtools_sort_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', bam_output_file, sorted_bam_output_file]
+        samtools_sort_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', sorted_bam_output_file, bam_output_file]
         samtools_index_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
         
         run_and_log_a_subprocess(self.output_directory, samtools_args, 'samtools_conversion')
         run_and_log_a_subprocess(self.output_directory, samtools_sort_args, 'samtools_sort')
         run_and_log_a_subprocess(self.output_directory, samtools_index_args, 'samtools_index')
         
-        return bam_output_file
+        return sorted_bam_output_file
     
         
 class BinSet:
