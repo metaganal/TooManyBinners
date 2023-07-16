@@ -14,6 +14,7 @@ class MetaSpadesAssemblyRunner:
 
     
     def run_assembly(self):
+        
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--meta', '-o', metaspades_result_directory]
         run_and_log_a_subprocess(self.output_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
@@ -48,7 +49,7 @@ class MetaSpadesAssemblyRunner:
     def check_if_assembly_step_has_already_been_completed(self):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         if os.path.isdir(metaspades_result_directory):
-            if not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta") or not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"):
+            if not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_contigs.fasta") and not os.path.exists(f"{metaspades_result_directory}/{self.sample_name}_scaffolds.fasta"):
                 print("Found metaspades directory but on contigs or scaffolds. Error, exiting.")
                 exit()
             if self.using_scaffolds == True:
