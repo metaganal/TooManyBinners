@@ -227,14 +227,15 @@ class Binner:
         final_concoct_bins_path = f"{output_directory}/fasta_bins"
         os.mkdir(final_concoct_bins_path)
         
-        step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
-        run_and_log_a_subprocess(self.log_directory_path, step_3_args, "concoct_final_step_extract_fasta_bins")
+        step_5_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
+        run_and_log_a_subprocess(self.log_directory_path, step_5_args, "concoct_final_step_extract_fasta_bins")
         
         
     def run_vamb(self, output_directory):
         if os.path.exists(output_directory):
             return 
             # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
+        os.mkdir(output_directory)
         vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
         run_and_log_a_subprocess(self.log_directory_path, vamb_args, "vamb_binning")
