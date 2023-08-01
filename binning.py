@@ -209,6 +209,7 @@ class Binner:
             return
         contig_bed_file_path = f"{output_directory}/contigs_10k.bed"
         contig_10k_file_path = f"{output_directory}/contigs_10k.fa"
+        os.mkdir(output_directory)
         step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'cut_up_fasta.py', self.contigs_path, '-c', '10000', '-o', '0', '--merge_last', '-b', contig_bed_file_path]
         run_and_log_a_subprocess(self.log_directory_path, step_1_args, "concoct_cutup_fasta", alternate_stdout_path=contig_10k_file_path)
         
