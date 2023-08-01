@@ -239,7 +239,7 @@ class Binner:
         vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
         run_and_log_a_subprocess(self.log_directory_path, vamb_args, "vamb_binning")
-        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', self.contigs_path, '--clusterspath', f"{output_directory}/results/vae_clusters.tsv", '0', f"{output_directory}/bins/"]
+        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', self.contigs_path, f"{output_directory}/results/vae_clusters.tsv", '0', f"{output_directory}/bins"]
         run_and_log_a_subprocess(self.log_directory_path, create_fasta_args, "vamb_binning_step2")
         
 
