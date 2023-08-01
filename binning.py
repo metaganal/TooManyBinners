@@ -4,13 +4,14 @@ from utils import run_and_log_a_subprocess
 
 class MetaSpadesAssemblyRunner:
     
-    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads, sample_name):
+    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads, sample_name, log_directory):
         self.output_directory = output_directory
         self.using_scaffolds = using_scaffolds
         self.read_fwd_path = read_fwd_path
         self.read_rev_path = read_rev_path
         self.threads = threads
         self.sample_name = sample_name
+        self.log_directory = log_directory
 
     
     def run_assembly(self):
@@ -62,9 +63,10 @@ class MetaSpadesAssemblyRunner:
 class ContigAbundances:
     
     
-    def __init__(self, output_directory, contig_file_path, read_fwd_path, read_rev_path, threads):
+    def __init__(self, output_directory, contig_file_path, read_fwd_path, read_rev_path, threads, log_directory):
         
         self.output_directory = output_directory
+        self.log_directory = log_directory
         self.contig_file_path = contig_file_path
         self.read_fwd_path = read_fwd_path
         self.read_rev_path = read_rev_path
@@ -121,7 +123,7 @@ class BinSet:
      
     def __init__(self, directory_of_bins):
         self.directory_of_bins = directory_of_bins
-         
+
          
 
 class Binner:
@@ -132,7 +134,7 @@ class Binner:
     log_directory_path = ""
     threads = "1"
     min_contig_length = "2000"
-    
+    sample_name = ""
 
 
     @classmethod
@@ -158,7 +160,10 @@ class Binner:
         
         cls.min_contig_length = min_contig_length
         
-        
+    @classmethod
+    def add_or_change_sample_name(cls, sample_name):
+        cls.sample_name = sample_name
+
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
         if os.path.exists(depth_output_path):
@@ -170,11 +175,13 @@ class Binner:
        
         
     def run_maxbin2(self, output_directory):
+        if os.path.exists(f"{output_directory}"):
+            return
         
         maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
                         '-thread', self.threads, '-abund', self.read_depths_path, '-out', f"{output_directory}/sample_result_"]
         
-        run_and_log_a_subprocess(output_directory, maxbin2_args, "maxbin2_binning")
+        run_and_log_a_subprocess(self.log_directory_path, maxbin2_args, "maxbin2_binning")
 
         
 
@@ -186,7 +193,7 @@ class Binner:
         metabat2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
-        run_and_log_a_subprocess(output_directory, metabat2_args, "metabat2_binning")
+        run_and_log_a_subprocess(self.log_directory_path, metabat2_args, "metabat2_binning")
         
         
     def run_semibin2(self, output_directory):
@@ -195,60 +202,66 @@ class Binner:
         semibin_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
-        run_and_log_a_subprocess(output_directory, semibin_args, "semibin_binning")
+        run_and_log_a_subprocess(self.log_directory_path, semibin_args, "semibin_binning")
 
     def run_concoct(self, output_directory):
+        if os.path.exists(f"{output_directory}"):
+            return
         contig_bed_file_path = f"{output_directory}/contigs_10k.bed"
         contig_10k_file_path = f"{output_directory}/contigs_10k.fa"
         step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'cut_up_fasta.py', self.contigs_path, '-c', '10000', '-o', '0', '--merge_last', '-b', contig_bed_file_path]
-        run_and_log_a_subprocess(output_directory, step_1_args, "concoct_cutup_fasta", alternate_stdout_path=contig_10k_file_path)
+        run_and_log_a_subprocess(self.log_directory_path, step_1_args, "concoct_cutup_fasta", alternate_stdout_path=contig_10k_file_path)
         
         coverage_table_path = f"{output_directory}/coverage_table.tsv"
         step_2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct_coverage_table.py', contig_bed_file_path, self.abundance_information_path]
-        run_and_log_a_subprocess(output_directory, step_2_args, "concoct_gen_cov_table", alternate_stdout_path=coverage_table_path)
+        run_and_log_a_subprocess(self.log_directory_path, step_2_args, "concoct_gen_cov_table", alternate_stdout_path=coverage_table_path)
         
-        step_3_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct', '--composition_file', self.contigs_path, '--length_threshold', self.min_contig_length, '--coverage_file', coverage_table_path, '-b', output_directory]
-        run_and_log_a_subprocess(output_directory, step_3_args, "concoct_step_3_run_concoct")
+        step_3_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct', '--composition_file', contig_10k_file_path, '--length_threshold', self.min_contig_length, '--coverage_file', coverage_table_path, '-b', output_directory]
+        run_and_log_a_subprocess(self.log_directory_path, step_3_args, "concoct_step_3_run_concoct")
         
         clustered_file_path = f"{output_directory}/clustering_gt{self.min_contig_length}.csv"
         clustering_merged_path = f"{output_directory}/clustering_merged.csv"
         step_4_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'merge_cutup_clustering.py', clustered_file_path]
-        run_and_log_a_subprocess(output_directory, step_4_args, "concoct_cutup_clustering", alternate_stdout_path=clustering_merged_path)
+        run_and_log_a_subprocess(self.log_directory_path, step_4_args, "concoct_cutup_clustering", alternate_stdout_path=clustering_merged_path)
         final_concoct_bins_path = f"{output_directory}/fasta_bins/"
         os.mkdir(final_concoct_bins_path)
         
         step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
-        run_and_log_a_subprocess(output_directory, step_3_args, "concoct_final_step_extract_fasta_bins")
+        run_and_log_a_subprocess(self.log_directory_path, step_3_args, "concoct_final_step_extract_fasta_bins")
         
         
     def run_vamb(self, output_directory):
+        if os.path.exists(output_directory):
+            return 
             # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
         vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
                          '-p', self.threads]
-        run_and_log_a_subprocess(output_directory, vamb_args, "vamb_binning")
-        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', '--fastapath', self.contigs_path, '--clusterspath', f"{output_directory}/results/vae_clusters.tsv", '--minsize', '0', '--outdir', f"{output_directory}/bins/"]
-        run_and_log_a_subprocess(output_directory, create_fasta_args, "vamb_binning_step2")
+        run_and_log_a_subprocess(self.log_directory_path, vamb_args, "vamb_binning")
+        create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', self.contigs_path, '--clusterspath', f"{output_directory}/results/vae_clusters.tsv", '0', f"{output_directory}/bins/"]
+        run_and_log_a_subprocess(self.log_directory_path, create_fasta_args, "vamb_binning_step2")
         
 
-
 def setup_binning(args, sample_name):
-    contig_path = generate_contigs(args, sample_name)
-
-    contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads)
-
-    Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
     log_directory = f"{args.output_directory}/log_directory/"
-    
+
     if not os.path.exists(log_directory):
         os.mkdir(log_directory)
     
+    contig_path = generate_contigs(args, sample_name, log_directory)
+
+
+    contig_abundance_gen = ContigAbundances(output_directory=args.output_directory, contig_file_path=contig_path, read_fwd_path=args.forward_reads, read_rev_path=args.reverse_reads, threads=args.threads, log_directory=log_directory)
+
+    Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
+    Binner.add_or_change_sample_name = sample_name
+
     Binner.add_or_change_log_directory(log_directory)
     the_binner = Binner()
     the_binner.calculate_read_depth(f"{args.output_directory}/{sample_name}_read_depths.txt")
     
     return contig_abundance_gen,the_binner
 
-def generate_contigs(args, sample_name):
+def generate_contigs(args, sample_name, log_directory):
     if args.contig_path:
         return args.contig_path
     else:
@@ -257,7 +270,7 @@ def generate_contigs(args, sample_name):
         else:
             using_scaffolds = True
     
-        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads, sample_name)
+        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads, sample_name, log_directory)
         contig_path = assembler.check_if_assembly_step_has_already_been_completed()
         
         if contig_path == False:

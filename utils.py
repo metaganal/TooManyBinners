@@ -47,3 +47,4 @@ def get_name_of_sample(rev_path, fwd_path):
         sample_name = sample_name + rev_path[i]
         
     return sample_name
+
