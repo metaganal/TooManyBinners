@@ -224,7 +224,7 @@ class Binner:
         clustering_merged_path = f"{output_directory}/clustering_merged.csv"
         step_4_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'merge_cutup_clustering.py', clustered_file_path]
         run_and_log_a_subprocess(self.log_directory_path, step_4_args, "concoct_cutup_clustering", alternate_stdout_path=clustering_merged_path)
-        final_concoct_bins_path = f"{output_directory}/fasta_bins/"
+        final_concoct_bins_path = f"{output_directory}/fasta_bins"
         os.mkdir(final_concoct_bins_path)
         
         step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
