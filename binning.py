@@ -179,10 +179,10 @@ class Binner:
         
 
     def run_metabat2(self, output_directory):
-        if len([file for file in os.listdir(output_directory) if ".fa" in file]) > 1:
+        if os.path.exists(f"{output_directory}"):
+            print("Already found output metabat2 directory.")
             return
         
-        os.mkdir(output_directory)
         metabat2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2','metabat2', '-m', self.min_contig_length, '-t', self.threads, '--unbinned',
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
