@@ -199,7 +199,7 @@ class Binner:
         if os.path.exists(f"{output_directory}"):
             return
         
-        maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path, '--min_contig_length', self.min_contig_length,
+        maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path, '-min_contig_length', self.min_contig_length,
                         '-thread', self.threads, '-abund', self.read_depths_path, '-out', f"{output_directory}/sample_result_"]
         
         run_and_log_a_subprocess(self.log_directory_path, maxbin2_args, "maxbin2_binning")
@@ -227,7 +227,7 @@ class Binner:
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
         run_and_log_a_subprocess(self.log_directory_path, semibin_args, "semibin_binning")
-        self.move_bin_results_to_main_bin_dir(f"{output_directory}/output_recluster_bins/", "metabat2")
+        self.move_bin_results_to_main_bin_dir(f"{output_directory}/output_recluster_bins/", "semibin2")
 
 
     def run_concoct(self, output_directory):
