@@ -21,7 +21,7 @@ def main():
     parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
 
     args = parser.parse_args()
-
+    sample_name = ""
     forward_read_file_name = args.forward_reads.split("/")[-1]
     reverse_read_file_name = args.reverse_reads.split("/")[-1]
     for fwd,rev in zip(forward_read_file_name, reverse_read_file_name):
