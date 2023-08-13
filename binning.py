@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import os
 from utils import run_and_log_a_subprocess
@@ -135,6 +136,8 @@ class Binner:
     threads = "1"
     min_contig_length = "2000"
     sample_name = ""
+    final_bins_directory = ""
+
 
 
     @classmethod
@@ -154,6 +157,12 @@ class Binner:
     def add_or_change_log_directory(cls, log_directory_path):
         
         cls.log_directory_path = log_directory_path
+    
+    @classmethod 
+    def add_or_change_final_bins_directory(cls, final_bins_directory):
+        
+        cls.final_bins_directory = final_bins_directory
+        
 
     @classmethod
     def add_or_change_min_contig_length(cls, min_contig_length):
@@ -173,15 +182,28 @@ class Binner:
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
        
+    def move_bin_results_to_main_bin_dir(self, bin_directory, binner_name):
+        for result in os.listdir(bin_directory):
+            result_path = f"{bin_directory}/{result}"
+            
+            if os.path.isdir(result_path):
+            
+                self.move_bin_results_to_main_bin_dir(result_path, binner_name)
         
+            if ".fa" or ".fasta" in result_path:
+                shutil.copy(result_path, f"{self.final_bins_directory}/{binner_name}_{result}")
+
+
+
     def run_maxbin2(self, output_directory):
         if os.path.exists(f"{output_directory}"):
             return
         
-        maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path,
+        maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path, '--min_contig_length', self.min_contig_length,
                         '-thread', self.threads, '-abund', self.read_depths_path, '-out', f"{output_directory}/sample_result_"]
         
         run_and_log_a_subprocess(self.log_directory_path, maxbin2_args, "maxbin2_binning")
+        self.move_bin_results_to_main_bin_dir(output_directory, "maxbin2")
 
         
 
@@ -194,6 +216,8 @@ class Binner:
                         '--seed', '0', '-i', self.contigs_path, '-a', self.read_depths_path, '-o', output_directory]
         
         run_and_log_a_subprocess(self.log_directory_path, metabat2_args, "metabat2_binning")
+        self.move_bin_results_to_main_bin_dir(output_directory, "metabat2")
+
         
         
     def run_semibin2(self, output_directory):
@@ -203,6 +227,8 @@ class Binner:
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
         run_and_log_a_subprocess(self.log_directory_path, semibin_args, "semibin_binning")
+        self.move_bin_results_to_main_bin_dir(f"{output_directory}/output_recluster_bins/", "metabat2")
+
 
     def run_concoct(self, output_directory):
         if os.path.exists(f"{output_directory}"):
@@ -229,6 +255,8 @@ class Binner:
         
         step_5_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'extract_fasta_bins.py', self.contigs_path, clustering_merged_path, '--output_path', final_concoct_bins_path]
         run_and_log_a_subprocess(self.log_directory_path, step_5_args, "concoct_final_step_extract_fasta_bins")
+        self.move_bin_results_to_main_bin_dir(final_concoct_bins_path, "concoct")
+
         
         
     def run_vamb(self, output_directory):
@@ -242,7 +270,11 @@ class Binner:
         # note this filters out any genomes with less than 100k bases in size!
         create_fasta_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'python3', '/opt/create_fasta.py', self.contigs_path, f"{output_directory}/results/vae_clusters.tsv", '100000', f"{output_directory}/bins"]
         run_and_log_a_subprocess(self.log_directory_path, create_fasta_args, "vamb_binning_step2")
+        self.move_bin_results_to_main_bin_dir(f"{output_directory}/bins", "vamb")
         
+
+
+
 
 def setup_binning(args, sample_name):
     log_directory = f"{args.output_directory}/log_directory/"
@@ -264,6 +296,8 @@ def setup_binning(args, sample_name):
     the_binner.calculate_read_depth(f"{args.output_directory}/{sample_name}_read_depths.txt")
     
     return contig_abundance_gen,the_binner
+
+
 
 def generate_contigs(args, sample_name, log_directory):
     if args.contig_path:
@@ -290,8 +324,9 @@ def generate_contigs(args, sample_name, log_directory):
     return contig_path
 
 
+
 def run_binning(output_directory, the_binner, binner_option_list):
-    
+    the_binner.add_or_change_final_bins_directory(f"{output_directory}/final_bins/")
     bin_methods_dict = {'Semibin2' : the_binner.run_semibin2(f"{output_directory}/Semibin2/"), 'Metabat2' : the_binner.run_metabat2(f"{output_directory}/Metabat2/"),
                         'Maxbin2' : the_binner.run_maxbin2(f"{output_directory}/Maxbin2/"), "Vamb" : the_binner.run_vamb(f"{output_directory}/Vamb/"), "CONCOCT" : the_binner.run_concoct(f"{output_directory}/CONCOCT/")}
     
@@ -305,3 +340,6 @@ def run_binning(output_directory, the_binner, binner_option_list):
             
             print(f"Could not find individual binner chosen: {binner} - please check your binner options. Exiting.")
             exit()
+
+
+
