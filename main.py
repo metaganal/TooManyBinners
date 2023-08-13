@@ -29,7 +29,7 @@ def main():
             sample_name = sample_name + fwd
         else:
             break
-    the_binner = setup_binning(args, sample_name)
+    contig_abundances,the_binner = setup_binning(args, sample_name)
     run_binning(args.output_directory, the_binner, ",".join(args.individual_binners))
 
 

@@ -327,6 +327,8 @@ def generate_contigs(args, sample_name, log_directory):
 
 def run_binning(output_directory, the_binner, binner_option_list):
     the_binner.add_or_change_final_bins_directory(f"{output_directory}/final_bins/")
+    if not os.path.isdir(f"{output_directory}/final_bins/"):
+        os.mkdir(f"{output_directory}/final_bins/")
     bin_methods_dict = {'Semibin2' : the_binner.run_semibin2(f"{output_directory}/Semibin2/"), 'Metabat2' : the_binner.run_metabat2(f"{output_directory}/Metabat2/"),
                         'Maxbin2' : the_binner.run_maxbin2(f"{output_directory}/Maxbin2/"), "Vamb" : the_binner.run_vamb(f"{output_directory}/Vamb/"), "CONCOCT" : the_binner.run_concoct(f"{output_directory}/CONCOCT/")}
     
