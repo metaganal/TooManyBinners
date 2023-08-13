@@ -196,9 +196,10 @@ class Binner:
 
 
     def run_maxbin2(self, output_directory):
+
         if os.path.exists(f"{output_directory}"):
             return
-        
+        os.mkdir(output_directory)
         maxbin2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'run_MaxBin.pl', '-contig', self.contigs_path, '-min_contig_length', self.min_contig_length,
                         '-thread', self.threads, '-abund', self.read_depths_path, '-out', f"{output_directory}/sample_result_"]
         
