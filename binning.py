@@ -18,7 +18,7 @@ class MetaSpadesAssemblyRunner:
         
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--meta', '-o', metaspades_result_directory]
-        run_and_log_a_subprocess(self.output_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
+        run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
 
         if self.using_scaffolds == True:
 
@@ -34,7 +34,7 @@ class MetaSpadesAssemblyRunner:
     def run_assembly_with_custom_kmer_lengths(self, custom_kmer_lengths):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '-k', custom_kmer_lengths, '--meta', '-o', metaspades_result_directory]
-        run_and_log_a_subprocess(self.output_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
+        run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
 
         if self.using_scaffolds == True:
 
@@ -84,7 +84,7 @@ class ContigAbundances:
         if len([file for file in os.listdir(self.output_directory) if ".bt2" in file]) == 6:
             return indice_basename
         bowtie_indice_build_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
-        run_and_log_a_subprocess(self.output_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
+        run_and_log_a_subprocess(self.log_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
         return indice_basename
         
     def align_reads_to_contigs(self):
@@ -95,7 +95,7 @@ class ContigAbundances:
                         '-2', self.read_rev_path, '-p', self.threads, '--very-sensitive', 
                         '--no-unal', '-S', sam_output_file]
         
-        run_and_log_a_subprocess(self.output_directory, bowtie2_args, 'bowtie_sam_log')
+        run_and_log_a_subprocess(self.log_directory, bowtie2_args, 'bowtie_sam_log')
         
         return sam_output_file
     
@@ -112,9 +112,9 @@ class ContigAbundances:
         samtools_sort_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', sorted_bam_output_file, bam_output_file]
         samtools_index_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'index', '-@', self.threads, sorted_bam_output_file]
         
-        run_and_log_a_subprocess(self.output_directory, samtools_args, 'samtools_conversion')
-        run_and_log_a_subprocess(self.output_directory, samtools_sort_args, 'samtools_sort')
-        run_and_log_a_subprocess(self.output_directory, samtools_index_args, 'samtools_index')
+        run_and_log_a_subprocess(self.log_directory, samtools_args, 'samtools_conversion')
+        run_and_log_a_subprocess(self.log_directory, samtools_sort_args, 'samtools_sort')
+        run_and_log_a_subprocess(self.log_directory, samtools_index_args, 'samtools_index')
         
         return sorted_bam_output_file
     
@@ -257,7 +257,8 @@ def setup_binning(args, sample_name):
 
     Binner.add_read_contig_and_abundance_paths_to_base_binner_class(contigs_path=contig_path, fwd_read_path=args.forward_reads, rev_read_path=args.reverse_reads, abundance_file_path=contig_abundance_gen.contig_abundance_file)
     Binner.add_or_change_sample_name = sample_name
-
+    if args.minimum_contig_length:
+        Binner.add_or_change_min_contig_length(args.min_contig_length)
     Binner.add_or_change_log_directory(log_directory)
     the_binner = Binner()
     the_binner.calculate_read_depth(f"{args.output_directory}/{sample_name}_read_depths.txt")
