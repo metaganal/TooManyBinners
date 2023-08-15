@@ -16,16 +16,18 @@ To be used as singularity image (singularity definition file included in the rep
 Able to be used from contigs or reads (reads generated through Metaspades, alignment information for binning is generated through Bowtie2).
 
 ### Takes the following arguments:
+Required:
+"-t", "--threads". Number of threads to use.
+"-fw", "--forward-reads". Path to forward reads.
+"-rev", "--reverse-reads", Path to reverse reads.
+"-b", "--individual-binners", Individual binners with commas, choices are currently: Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT.
+"-o", "--output-directory", Output directory path.
 
-"-t", "--threads", help="Threads", required=True
-"-fw", "--forward-reads", help="Forward read path", required=True
-"-rev", "--reverse-reads", help="reverse read path", required=True
-"-contigs", "--contig-path", help="contig file path, if not provided will auto assemble"
-"--minimum-contig-length", help="minium size of contigs for binning. Default is 2000."
-"-b", "--individual-binners", help="Pick individual binners with commas, choices are: Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT"
-"-o", "--output-directory", help="Output directory_path", required=True
-"-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto if not)".
-"-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?"
+Optional:
+"-contigs", "--contig-path", path to contigs if starting from contigs rather than reads.
+"--minimum-contig-length", Minimum size of contigs used for binning, default is 2000. Lower size can potentially increase bins generated but also increase contamination.
+"-c", "--custom-kmer-lengths", Custom kmer lengths for metaspades assembly (will default to auto if not). Option for metaspades assembly which can impact assembly results, tweaking this can improve results but automatic does fine.
+"-us", "--using-scaffolds", Whether to use the scaffolds or contigs produced by assembly when running metaspades assembly option.
 
 ### Example:
 ```
