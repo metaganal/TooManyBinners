@@ -1,4 +1,4 @@
-# TooManyBinners binning pipeline
+# TooManyBinners binning pipeline (v0.1)
 
 
 Pipeline tool built in python used to generate metagenomic bins with a variety of different binning tools for MAG generation. The aim of the tool is to simplify the MAG generation process by minimising the configurations required and the individual steps needed. 
