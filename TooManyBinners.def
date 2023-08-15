@@ -5,14 +5,12 @@ MirrorURL: http://ftp.us.debian.org/debian/
 %environment
     PATH=/opt/mamba/bin:$PATH
     PATH=/opt/:$PATH
-
 %post
 
     # apt repository installs...
     apt-get update
-    apt-get -y install wget nano git
-    apt-get -y install python3
-    apt-get update && apt-get install -y wget git bash gcc gfortran g++ make file
+    apt-get update && apt-get install -y wget git bash gcc gfortran g++ make file python3 nano curl
+
 
 
     # mamba obtaining

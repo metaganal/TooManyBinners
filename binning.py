@@ -19,6 +19,7 @@ class MetaSpadesAssemblyRunner:
         
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--meta', '-o', metaspades_result_directory]
+
         run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
 
         if self.using_scaffolds == True:
@@ -35,7 +36,9 @@ class MetaSpadesAssemblyRunner:
     def run_assembly_with_custom_kmer_lengths(self, custom_kmer_lengths):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
         metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '-k', custom_kmer_lengths, '--meta', '-o', metaspades_result_directory]
+
         run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
+
 
         if self.using_scaffolds == True:
 
@@ -82,16 +85,20 @@ class ContigAbundances:
     def build_indices(self):
         
         indice_basename = f"{self.output_directory}/contig_indices"
+
         if len([file for file in os.listdir(self.output_directory) if ".bt2" in file]) == 6:
             return indice_basename
         bowtie_indice_build_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'bowtie2-build', '--threads', self.threads, self.contig_file_path, indice_basename]
         run_and_log_a_subprocess(self.log_directory, bowtie_indice_build_args, "bowtie_build_contig_indices")
+
         return indice_basename
         
     def align_reads_to_contigs(self):
         sam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.sam"
+
         if os.path.exists(sam_output_file):
             return sam_output_file
+
         bowtie2_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'bowtie2', '-x', self.indice_basename, '-1', self.read_fwd_path, 
                         '-2', self.read_rev_path, '-p', self.threads, '--very-sensitive', 
                         '--no-unal', '-S', sam_output_file]
@@ -104,10 +111,12 @@ class ContigAbundances:
     def convert_and_sort_aligned_sam_file(self):
         
         bam_output_file = f"{self.output_directory}/aligned_reads_to_contigs.bam"
+
         sorted_bam_output_file = f"{self.output_directory}/sorted_reads_to_contigs.bam"
         
         if os.path.exists(sorted_bam_output_file):
             return sorted_bam_output_file
+
         
         samtools_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'view', '-@', self.threads, '-Sb', self.aligned_sam_file, '-o', bam_output_file] 
         samtools_sort_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'samtools', 'sort', '-@', self.threads, '-O', 'bam', '-o', sorted_bam_output_file, bam_output_file]
@@ -175,9 +184,11 @@ class Binner:
 
     @classmethod
     def calculate_read_depth(cls, depth_output_path):
+
         if os.path.exists(depth_output_path):
             cls.read_depths_path = depth_output_path
             return
+
         get_contig_depth_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'jgi_summarize_bam_contig_depths', '--outputDepth', depth_output_path, cls.abundance_information_path]
         run_and_log_a_subprocess(cls.log_directory_path, get_contig_depth_args, "metabat2_contig_read_depth_gen")
         cls.read_depths_path = depth_output_path
@@ -222,8 +233,10 @@ class Binner:
         
         
     def run_semibin2(self, output_directory):
+
         if os.path.exists(f"{output_directory}/output_recluster_bins/"):
             return
+
         semibin_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'SemiBin', 'single_easy_bin', '-i', self.contigs_path, '-b', self.abundance_information_path, '-o', output_directory, '-t', self.threads,
                         '--write-pre-reclustering-bins', '--training-type', 'self']
         
@@ -236,6 +249,7 @@ class Binner:
             return
         contig_bed_file_path = f"{output_directory}/contigs_10k.bed"
         contig_10k_file_path = f"{output_directory}/contigs_10k.fa"
+
         os.mkdir(output_directory)
         step_1_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'cut_up_fasta.py', self.contigs_path, '-c', '10000', '-o', '0', '--merge_last', '-b', contig_bed_file_path]
         run_and_log_a_subprocess(self.log_directory_path, step_1_args, "concoct_cutup_fasta", alternate_stdout_path=contig_10k_file_path)
@@ -246,10 +260,12 @@ class Binner:
         
         step_3_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'concoct', '--composition_file', contig_10k_file_path, '--length_threshold', self.min_contig_length, '--coverage_file', coverage_table_path, '-b', output_directory]
         run_and_log_a_subprocess(self.log_directory_path, step_3_args, "concoct_step_3_run_concoct")
+
         
         clustered_file_path = f"{output_directory}/clustering_gt{self.min_contig_length}.csv"
         clustering_merged_path = f"{output_directory}/clustering_merged.csv"
         step_4_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/CONCOCTMetabat2MaxBin2SemiBin2', 'merge_cutup_clustering.py', clustered_file_path]
+
         run_and_log_a_subprocess(self.log_directory_path, step_4_args, "concoct_cutup_clustering", alternate_stdout_path=clustering_merged_path)
         final_concoct_bins_path = f"{output_directory}/fasta_bins"
         os.mkdir(final_concoct_bins_path)
@@ -264,8 +280,10 @@ class Binner:
         if os.path.exists(output_directory):
             return 
             # vamb --outdir path/to/outdir --fasta /path/to/catalogue.fna.gz --bamfiles /path/to/bam/*.bam -o C
+
         os.mkdir(output_directory)
         vamb_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/Vamb4', 'vamb', '--outdir', f"{output_directory}/results/", '--fasta', self.contigs_path, '--bamfiles', self.abundance_information_path, '-m', self.min_contig_length,
+
                          '-p', self.threads]
         run_and_log_a_subprocess(self.log_directory_path, vamb_args, "vamb_binning")
         # note this filters out any genomes with less than 100k bases in size!
