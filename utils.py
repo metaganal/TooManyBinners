@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def run_and_log_a_subprocess(process_log_dir, process_args, name_of_sample=None, alternate_stdout_path=False):
+def run_and_log_a_subprocess(process_log_dir, process_args, process_name=None, alternate_stdout_path=False):
 
     try:
         
@@ -13,7 +13,7 @@ def run_and_log_a_subprocess(process_log_dir, process_args, name_of_sample=None,
     
 
 
-    if name_of_sample == None:
+    if process_name == None:
         
         current_process_num = len(os.listdir(process_log_dir)) + 1
 
@@ -22,8 +22,8 @@ def run_and_log_a_subprocess(process_log_dir, process_args, name_of_sample=None,
     
     else:
         
-        process_log_stdout = f"{process_log_dir}/process_{name_of_sample}_stdoutput.txt"
-        process_log_stderr = f"{process_log_dir}/process_{name_of_sample}_stderr.txt"
+        process_log_stdout = f"{process_log_dir}/process_{process_name}_stdoutput.txt"
+        process_log_stderr = f"{process_log_dir}/process_{process_name}_stderr.txt"
     
     
     result = subprocess.run(process_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -39,6 +39,14 @@ def run_and_log_a_subprocess(process_log_dir, process_args, name_of_sample=None,
         
         f.write(result.stderr)
 
+    write_to_checkpoint_file(process_log_dir, process_name)
+
+
+def write_to_checkpoint_file(process_log_dir, checkpoint_string):
+    with open(f"{process_log_dir}/checkpoints.txt", "w") as f:
+        f.write(f"{checkpoint_string},")
+
+
 def get_name_of_sample(rev_path, fwd_path):
     sample_name = ""
     for i in range(0, len(rev_path), 1):
@@ -47,3 +55,4 @@ def get_name_of_sample(rev_path, fwd_path):
         sample_name = sample_name + rev_path[i]
         
     return sample_name
+
