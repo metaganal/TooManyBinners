@@ -31,10 +31,10 @@ Optional:
 
 ### Example:
 ```
-singularity run --cleanenv files_from_local/TooManyBinners.sif -fw 2manyBinners_testing/test_data/cami_plant_samplereads_1_P1.fastq.gz \
--rev 2manyBinners_testing/test_data/cami_plant_samplereads_1_P2.fastq.gz \
+singularity run --cleanenv TooManyBinners.sif -fw samplereads_1_P1.fastq.gz \
+-rev samplereads_1_P2.fastq.gz \
 -b Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT \
--o 2manyBinners_testing/test_output/ -t 10 \
+-o test_output/ -t 10 \
 -us True
 ```
 
