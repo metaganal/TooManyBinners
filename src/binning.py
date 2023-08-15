@@ -1,7 +1,7 @@
 import shutil
 import subprocess
 import os
-from utils import run_and_log_a_subprocess
+from bin_utils import run_and_log_a_subprocess
 
 class MetaSpadesAssemblyRunner:
     

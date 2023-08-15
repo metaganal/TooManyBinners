@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 
-from binning import setup_binning
-from binning import run_binning
+from src.binning import setup_binning
+from src.binning import run_binning
 # Needs to take the following arguments:
 # threads,contigs,reads,individual_binners,minimum_contig_length
 # 

@@ -30,4 +30,4 @@ MirrorURL: http://ftp.us.debian.org/debian/
     mv TooManyBinners /opt/
 
 %runscript
-    exec python3 /opt/TooManyBinners/main.py "$@"
+    exec python3 /opt/TooManyBinners/src/main.py "$@"
