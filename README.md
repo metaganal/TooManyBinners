@@ -1,12 +1,15 @@
 # TooManyBinners binning pipeline
 
+
 Pipeline tool built in python used to generate metagenomic bins with a variety of different binning tools for MAG generation. The aim of the tool is to simplify the MAG generation process by minimising the configurations required and the individual steps needed. 
 
 It can generate bin sets from either just one binning tool or all of them, which can be used for evaluating the best binning tool for the dataset, or used downstream for ensemble binning - this tool will also soon include an ensemble binner.
 
 To be used as singularity image (singularity definition file included in the repo).
 
-### Currently can generate bins from the following binners:
+
+## Currently can generate bins from the following binners:
+
 - Vamb
 - SemiBin2
 - CONCOCT
@@ -15,7 +18,9 @@ To be used as singularity image (singularity definition file included in the rep
 
 Able to be used from contigs or reads (reads generated through Metaspades, alignment information for binning is generated through Bowtie2).
 
-### Takes the following arguments:
+
+## Takes the following arguments:
+
 Required:
 - "-t", "--threads". Number of threads to use.
 - "-fw", "--forward-reads". Path to forward reads.
@@ -29,7 +34,9 @@ Optional:
 - "-c", "--custom-kmer-lengths", Custom kmer lengths for metaspades assembly (will default to auto if not). Option for metaspades assembly which can impact assembly results, tweaking this can improve results but automatic does fine.
 - "-us", "--using-scaffolds", Whether to use the scaffolds or contigs produced by assembly when running metaspades assembly option.
 
-### Example:
+
+## Example:
+
 ```
 singularity run --cleanenv TooManyBinners.sif -fw samplereads_1_P1.fastq.gz \
 -rev samplereads_1_P2.fastq.gz \
@@ -39,5 +46,6 @@ singularity run --cleanenv TooManyBinners.sif -fw samplereads_1_P1.fastq.gz \
 ```
 
 
-### Output:
-Output currently is a final_bins directory consisting of the output bin sets generated from each binning tool.
+## Output:
+
+Output currently is a final bins directory consisting of the output bin sets generated from each binning tool.
