@@ -28,6 +28,8 @@ MirrorURL: http://ftp.us.debian.org/debian/
     mamba create -n Vamb4 pip
     bash -c "source /opt/mamba/bin/activate Vamb4 && pip install vamb"
     wget https://raw.githubusercontent.com/RasmussenLab/vamb/master/src/create_fasta.py -O /opt/create_fasta.py
-
+    git clone https://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@github.com/lobrien20/TooManyBinners -b tests
+    mv TooManyBinners /opt/
 
 %runscript
+    exec python3 /opt/TooManyBinners/main.py "$@"

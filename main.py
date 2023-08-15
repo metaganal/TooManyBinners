@@ -15,7 +15,7 @@ def main():
     parser.add_argument("-rev", "--reverse-reads", help="reverse read path", required=True)
     parser.add_argument("-contigs", "--contig-path", help="contig file path, if not provided will auto assemble")
     parser.add_argument("--minimum-contig-length", help="minium size of contigs for binning. Default is 2000.")
-    parser.add_argument("-b", "--individual-binners", help="Pick individual binners with commas, choices are: Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT", required=True) # KEEP UPDATING THIS
+    parser.add_argument("-b", "--individual-binners", help="Pick individual binners with commas, choices are: Semibin2,Maxbin2,Metabat2,Vamb,CONCOCT", required=True)
     parser.add_argument("-o", "--output-directory", help="Output directory_path", required=True)
     parser.add_argument("-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto)")
     parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
