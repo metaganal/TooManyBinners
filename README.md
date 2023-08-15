@@ -36,4 +36,6 @@ singularity run --cleanenv files_from_local/TooManyBinners.sif -fw 2manyBinners_
 -us True
 ```
 
-All binsfrom each bin set is produced are generated in a final bins directory.
+
+### Output:
+Output currently is a final_bins directory consisting of the output bin sets generated from each binning tool.
