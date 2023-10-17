@@ -19,6 +19,7 @@ def main():
     parser.add_argument("-o", "--output-directory", help="Output directory_path", required=True)
     parser.add_argument("-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto)")
     parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
+    parser.add_argument("-m", "--memory", help="Available memory", required=True)
 
     args = parser.parse_args()
     sample_name = ""

@@ -5,7 +5,7 @@ from bin_utils import run_and_log_a_subprocess
 
 class MetaSpadesAssemblyRunner:
     
-    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads, sample_name, log_directory):
+    def __init__(self, output_directory, using_scaffolds, read_fwd_path, read_rev_path, threads, sample_name, log_directory, memory):
         self.output_directory = output_directory
         self.using_scaffolds = using_scaffolds
         self.read_fwd_path = read_fwd_path
@@ -13,12 +13,13 @@ class MetaSpadesAssemblyRunner:
         self.threads = threads
         self.sample_name = sample_name
         self.log_directory = log_directory
+        self.memory = memory
 
     
     def run_assembly(self):
         
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
-        metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--meta', '-o', metaspades_result_directory]
+        metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '--memory', self.memory, '--meta', '-o', metaspades_result_directory]
 
         run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
 
@@ -35,7 +36,7 @@ class MetaSpadesAssemblyRunner:
 
     def run_assembly_with_custom_kmer_lengths(self, custom_kmer_lengths):
         metaspades_result_directory = f"{self.output_directory}/metaspades_assembly_directory/"
-        metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '-k', custom_kmer_lengths, '--meta', '-o', metaspades_result_directory]
+        metaspades_assembly_args = ['mamba', 'run', '--prefix', '/opt/mamba/envs/prebinning', 'spades.py', '-1', self.read_fwd_path, '-2', self.read_rev_path, '-t', self.threads, '-k', custom_kmer_lengths, '--memory', self.memory, '--meta', '-o', metaspades_result_directory]
 
         run_and_log_a_subprocess(self.log_directory, metaspades_assembly_args, "metaspades_assembly_auto_kmer")
 
@@ -327,7 +328,7 @@ def generate_contigs(args, sample_name, log_directory):
         else:
             using_scaffolds = True
     
-        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads, sample_name, log_directory)
+        assembler = MetaSpadesAssemblyRunner(args.output_directory, using_scaffolds, args.forward_reads, args.reverse_reads, args.threads, sample_name, log_directory, args.memory)
         contig_path = assembler.check_if_assembly_step_has_already_been_completed()
         
         if contig_path == False:
