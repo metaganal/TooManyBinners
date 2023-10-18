@@ -33,7 +33,7 @@ Optional:
 - "--minimum-contig-length", Minimum size of contigs used for binning, default is 2000. Lower size can potentially increase bins generated but also increase contamination.
 - "-c", "--custom-kmer-lengths", Custom kmer lengths for metaspades assembly (will default to auto if not). Option for metaspades assembly which can impact assembly results, tweaking this can improve results but automatic does fine.
 - "-us", "--using-scaffolds", Whether to use the scaffolds or contigs produced by assembly when running metaspades assembly option.
-
+- "-m", Memory used (relevant to only metaspades which has a default cap of 250GB) default is 100GB. 
 
 ## Example:
 
