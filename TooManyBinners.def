@@ -33,8 +33,4 @@ MirrorURL: http://ftp.us.debian.org/debian/
     exec python3 /opt/TooManyBinners/main.py "$@"
 
 
-mamba run -n my_env metabat2 -i file -o directory
-mamba activate
-metabat2 
 
-deactivate
