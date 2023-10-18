@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-
-from src.binning import setup_binning
-from src.binning import run_binning
+from src import binning
 # Needs to take the following arguments:
 # threads,contigs,reads,individual_binners,minimum_contig_length
 # 
@@ -19,6 +17,7 @@ def main():
     parser.add_argument("-o", "--output-directory", help="Output directory_path", required=True)
     parser.add_argument("-c", "--custom-kmer-lengths", help="Custom kmer lengths for metaspades assembly (will default to auto)")
     parser.add_argument("-us", "--using-scaffolds", help="Using metaspades assembly scaffolds?")
+    parser.add_argument("-m", "--memory", help="Available memory", default='100', type=str)
 
     args = parser.parse_args()
     sample_name = ""
@@ -29,8 +28,8 @@ def main():
             sample_name = sample_name + fwd
         else:
             break
-    contig_abundances,the_binner = setup_binning(args, sample_name)
-    run_binning(args.output_directory, the_binner, ",".join(args.individual_binners))
+    contig_abundances,the_binner = binning.setup_binning(args, sample_name)
+    binning.run_binning(args.output_directory, the_binner, ",".join(args.individual_binners))
 
 
 main()

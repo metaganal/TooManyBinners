@@ -23,11 +23,18 @@ MirrorURL: http://ftp.us.debian.org/debian/
     mamba create -n prebinning -c conda-forge -c bioconda bowtie2 samtools spades
     mamba create -n CONCOCTMetabat2MaxBin2SemiBin2 -c conda-forge -c bioconda concoct maxbin2 metabat2 semibin scikit-learn=1.1
 
-    mamba create -n Vamb4 pip
+    mamba create -n Vamb4 pip python=3.10
     bash -c "source /opt/mamba/bin/activate Vamb4 && pip install vamb"
     wget https://raw.githubusercontent.com/RasmussenLab/vamb/master/src/create_fasta.py -O /opt/create_fasta.py
     git clone https://www.github.com/lobrien20/TooManyBinners -b tests
     mv TooManyBinners /opt/
 
 %runscript
-    exec python3 /opt/TooManyBinners/src/main.py "$@"
+    exec python3 /opt/TooManyBinners/main.py "$@"
+
+
+mamba run -n my_env metabat2 -i file -o directory
+mamba activate
+metabat2 
+
+deactivate
